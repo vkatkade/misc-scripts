@@ -7,7 +7,7 @@ use warnings;
 # (1) quit unless we have the correct number of command-line args
 my $num_args = $#ARGV + 1;
 if ($num_args != 2) {
-    print "\nUsage: \nldap_query.pl -f filename\nldap_query.pl -c city\n";
+    print "\nUsage: \nldap_query.pl -f filename\nldap_query.pl -c city \nldap_query.pl -t country\n";
     exit;
 }
 
@@ -20,8 +20,10 @@ if( $mode eq '-f' ) {
     }
 } elsif ( $mode eq '-c') {
 ;
+} elsif ($mode eq '-t') {
+    ;
 } else {
-    print "\nUsage: \nldap_query.pl -f filename\nldap_query.pl -c city\n";
+    print "\nUsage: \nldap_query.pl -f filename\nldap_query.pl -c city \nldap_query.pl -t country\n";
     exit;
 }
 
@@ -75,6 +77,29 @@ if( $mode eq '-c' ) {
     die $result->error if $result->code;
 
     foreach my $entry ($result->entries) {
+        $entry->dump;
+        printf "%s, %s, %s, %s, %s, %s \r\n",
+           $entry->get_value("givenName"),
+            $entry->get_value("sn"),
+            $entry->get_value("mail"),
+            $entry->get_value("title"),
+            ($entry->get_value("state") || ' '),
+            $entry->get_value("description");
+    }
+
+}
+
+
+if( $mode eq '-t' ) {
+    printf "hello";
+    $result = $ldap->search(
+        base   => "ou=active,ou=employees,ou=people,o=cisco.com",
+        filter => "(&(co=$param))",
+    );
+
+    die $result->error if $result->code;
+
+    foreach my $entry ($result->entries) {
         # $entry->dump;
         printf "%s, %s, %s, %s, %s, %s \r\n",
            $entry->get_value("givenName"),
@@ -86,6 +111,7 @@ if( $mode eq '-c' ) {
     }
 
 }
+
 
 
 $ldap->unbind;
